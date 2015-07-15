@@ -24,16 +24,19 @@ Widget::~Widget()
     delete ui;
 }
 
+//发送按钮
 void Widget::on_sendButton_clicked()
 {
 
 }
 
+//退出按钮
 void Widget::on_exitButton_clicked()
 {
     close();
 }
 
+//获取用户名
 QString Widget::getUserName()
 {
     QStringList envVariables;
@@ -59,6 +62,7 @@ QString Widget::getUserName()
     return "unknown";
 }
 
+//获取主机名
 QString Widget::getHostName()
 {
     QString hostName = QHostInfo::localHostName();      //获取计算机名
@@ -77,14 +81,17 @@ QString Widget::getIp()
     return tr("getIP_err");
 }
 
-void Widget::newUser(QString userName, QStirng localHostName, QString ipAddress)
+//新用户加入
+void Widget::newUser(QString userName, QString localHostName, QString ipAddress)
 {
 }
 
-void Widget::userList(QString userName, QStirng localHostName, QString ipAddress)
+//用户列表
+void Widget::userList(QString userName, QString localHostName, QString ipAddress)
 {
 }
 
+//临时函数
 QString Widget::text()
 {
 /*=============QStringList操作==============
@@ -102,6 +109,7 @@ QString Widget::text()
     return temp;
 }
 
+//调试使用函数
 void Widget::on_pushButton_clicked()
 {
     //getUserName();
@@ -109,17 +117,19 @@ void Widget::on_pushButton_clicked()
     getUserName();
 }
 
-void Widget::processPendingDatagrams()
-{
-}
-
+//调试使用函数
 void Widget::lookedup(const QHostInfo &host)        //对应槽函数
 {
     qDebug()<<host.addresses().first().toString();//输出了第一个 ip地址
 }
 
-
+//发送消息
 void Widget::sendMessage(MessageType type, QString serverAddress)
 {
 
+}
+
+//接受消息
+void Widget::processPendingDatagrams()
+{
 }

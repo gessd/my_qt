@@ -2,7 +2,9 @@
 #define WIDGET_H
 
 #include <QWidget>
-#include <QHostInfo>
+
+class QUdpSocket;
+class QHostInfo;
 
 namespace Ui {
 class Widget;
@@ -48,8 +50,8 @@ protected:
     QString getHostName();
     QString getIp();
 
-    void newUser(QString userName, QStirng localHostName, QString ipAddress);
-    void userList(QString userName, QStirng localHostName, QString ipAddress);
+    void newUser(QString userName, QString localHostName, QString ipAddress);
+    void userList(QString userName, QString localHostName, QString ipAddress);
     void sendMessage(MessageType type, QString serverAddress="");
 
     QString temp;   //other
