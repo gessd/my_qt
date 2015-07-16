@@ -61,7 +61,7 @@
     </property>
    </column>
   </widget>
-  <widget class="QTextBrowser" name="textBrowser">
+  <widget class="QTextBrowser" name="messageBrowser">
    <property name="geometry">
     <rect>
      <x>10</x>

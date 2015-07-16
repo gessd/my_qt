@@ -25,7 +25,7 @@ class Widget : public QWidget
     
 public:
     explicit Widget(QWidget *parent = 0);
-    QString text();
+    void text();
     ~Widget();
     
 private slots:
@@ -49,12 +49,11 @@ protected:
     QString getUserName();
     QString getHostName();
     QString getIp();
-
+    QString getMessage();
     void newUser(QString userName, QString localHostName, QString ipAddress);
     void userList(QString userName, QString localHostName, QString ipAddress);
     void sendMessage(MessageType type, QString serverAddress="");
 
-    QString temp;   //other
 };
 
 #endif // WIDGET_H
