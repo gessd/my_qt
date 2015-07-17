@@ -9,6 +9,9 @@
 #include <QDateTime>
 
 #include <QFile>
+#include <QTcpSocket>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
@@ -87,9 +90,14 @@ QString Widget::getIp()
     return tr("getIP_err");
 }
 
+//获取消息内容
 QString Widget::getMessage()
 {
-    return tr("null");
+    QString msg = ui->messagetextEdit->toHtml();
+
+    ui->messagetextEdit->clear();
+    ui->messagetextEdit->setFocus();
+    return msg;
 }
 
 //新用户加入
@@ -113,6 +121,15 @@ void Widget::newUser(QString userName, QString localHostName, QString ipAddress)
 
         sendMessage(NewParticipant);
     }
+}
+
+//用户离开
+void Widget::userAway(QString userName, QString localHostName, QString time)
+{
+    int rowNum = ui->tableWidget->findItems(localHostName, Qt::MatchExactly).first()->row();
+    ui->tableWidget->removeRow(rowNum);
+    ui->messageBrowser->setTextColor(Qt::gray);
+    ui->messageBrowser->setCurrentFont(QFont("Times New Roman", 10));
 }
 
 //用户列表
@@ -158,25 +175,47 @@ void Widget::text()
     qDebug() << arr;
 }
 
+//判断IP地址及端口是否在线
+bool Widget::IPLive(QString ip, int port)
+{
+    QTcpSocket tcpClient;
+    tcpClient.abort();
+    tcpClient.connectToHost(ip, port);
+    //100毫秒没有连接上则判断不在线
+    return tcpClient.waitForConnected(100);
+}
+
+//获取网页所有源代码
+QString Widget::GetHtml(QString url)
+{
+    QNetworkAccessManager *manager = new QNetworkAccessManager();
+    QNetworkReply *reply = manager->get(QNetworkRequest(QUrl(url)));
+    QByteArray responseData;
+    QEventLoop eventLoop;
+    QObject::connect(manager, SIGNAL(finished(QNetworkReply *)), &eventLoop, SLOT(quit()));
+    eventLoop.exec();
+    responseData = reply->readAll();
+    return QString(responseData);
+}
+
+//获取本机公网IP地址
+QString Widget::GetNetIP(QString webCode)
+{
+    QString web = webCode.replace(" ", "");
+    web = web.replace("\r", "");
+    web = web.replace("\n", "");
+    QStringList list = web.split("<br/>");
+    QString tar = list[3];
+    QStringList ip = tar.split("=");
+    return ip[1];
+}
+
 //自定义按钮函数
 void Widget::on_pushButton_clicked()
 {
     //getUserName();
     //qDebug() << temp;
     //text();
-    QFile f("c:\\test.txt");
-    if(!f.open(QIODevice::WriteOnly))
-    {
-        qDebug() << "Open failed.";
-    }
-    QString userName, localName, ipAddress, message;
-    QTextStream txtInput(&f);
-    txtInput >> userName >> localName >> ipAddress >> message;
-    qDebug() << userName;
-    qDebug() << localName;
-    qDebug() << ipAddress;
-    qDebug() << message;
-    f.close();
 }
 
 //自定义槽函数

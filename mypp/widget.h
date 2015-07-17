@@ -26,6 +26,9 @@ class Widget : public QWidget
 public:
     explicit Widget(QWidget *parent = 0);
     void text();
+    bool IPLive(QString ip, int port);
+    QString GetHtml(QString url);
+    QString GetNetIP(QString webCode);
     ~Widget();
     
 private slots:
@@ -51,6 +54,7 @@ protected:
     QString getIp();
     QString getMessage();
     void newUser(QString userName, QString localHostName, QString ipAddress);
+    void userAway(QString userName, QString localHostName, QString time);
     void userList(QString userName, QString localHostName, QString ipAddress);
     void sendMessage(MessageType type, QString serverAddress="");
 
