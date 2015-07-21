@@ -10,6 +10,9 @@ namespace Ui {
     class client;
 }
 
+// 枚举变量标志信息的类型，分别为消息，新用户加入，用户退出，文件名，拒绝接受文件
+enum MessageType{Message, NewParticipant, ParticipantLeft, FileName, Refuse};
+
 class client : public QDialog
 {
     Q_OBJECT

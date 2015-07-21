@@ -13,6 +13,9 @@ namespace Ui {
 class Dialog;
 }
 
+// 枚举变量标志信息的类型，分别为消息，新用户加入，用户退出，文件名，拒绝接受文件
+enum MessageType{Message, NewParticipant, ParticipantLeft, FileName, Refuse};
+
 class Dialog : public QDialog
 {
     Q_OBJECT
@@ -32,6 +35,7 @@ private:
     QTcpServer *tcpServer;
     QList<QTcpSocket *>mytcpsocket;//连接成功的套接字
     void info_init();//信息初始化
+    void messageTransmit(QString uIP, QString message);
 };
 
 #endif // DIALOG_H

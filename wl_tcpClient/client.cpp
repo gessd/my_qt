@@ -1,9 +1,10 @@
-#include <QMessageBox>
+ï»¿#include <QMessageBox>
 #include <QString>
 
 #include "client.h"
 #include "ui_client.h"
 
+//#include <QTableWidgetItem>
 
 client::client(QWidget *parent) :
     QDialog(parent),
@@ -24,51 +25,53 @@ client::~client()
 }
 
 
-//¿Í»§¶Ë·¢ËÍÐÅÏ¢
+//å®¢æˆ·ç«¯å‘é€ä¿¡æ¯
 void client::clientSendMessage ()
 {
     QByteArray data;
-    data.append(ui->clientMessagelineEdit->text());
-    tcp->write(data);
+    data.append(ui->messagetextEdit->toPlainText());     //
+    tcp->write(data);       //å†™å…¥æ•°æ®
     ui->messagetextBrowser->insertPlainText (tr("send message: %1 \n").arg (QString(data)));
 }
 
+//æ¸…ç©ºæŒ‰é’®
 void client::on_cCleanpushButton_clicked()
 {
-    ui->messagetextBrowser->setText ("");
+    ui->messagetextBrowser->setText ("");   //æ¸…ç©ºæ•°æ®
 }
 
-//¿Í»§¶ËÁ¬½Ó°´Å¥²Ûº¯Êý
+//å®¢æˆ·ç«¯è¿žæŽ¥æŒ‰é’®æ§½å‡½æ•°
 void client::on_connectpushButton_clicked()
 {
     serverIP = ui->clientIPlineEdit->text ();
     clientPort = ui->clientPortlineEdit->text ();
-    if(serverIP.isEmpty () || clientPort.isEmpty ())
+    if(serverIP.isEmpty () || clientPort.isEmpty ())    //åˆ¤æ–­IPç«¯å£æ˜¯å¦æœ‰æ•°æ®
     {
-        QMessageBox::warning (this, tr("Warnning"), tr("·þÎñÆ÷IP»ò¶Ë¿ÚºÅ²»ÄÜÎª¿Õ"));
+        QMessageBox::warning (this, tr("Warnning"), tr("æœåŠ¡å™¨IPæˆ–ç«¯å£å·ä¸èƒ½ä¸ºç©º"));
         return;
     }
 
-    if(tcp)
+    if(tcp)     //å¦‚æžœå½“å‰tcpå·²æœ‰è¿žæŽ¥ï¼Œåˆ™é‡Šæ”¾å½“å‰è¿žæŽ¥
     {
         delete tcp;
     }
     tcp=new QTcpSocket(this);
-    tcp->connectToHost (serverIP, clientPort.toInt ()); //Á¬½Óµ½Ö÷»ú
+    tcp->connectToHost (serverIP, clientPort.toInt()); //è¿žæŽ¥åˆ°ä¸»æœº
     connect (tcp, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(displayError(QAbstractSocket::SocketError)));
-    connect (tcp, SIGNAL(connected()), this, SLOT(updateClientStatusConnect())); //¸üÐÂÁ¬½Ó×´Ì¬
-    //connect (tcp, SIGNAL(disconnected()), this, SLOT(updateClientStatusDisonnect())); //¸üÐÂ¶Ï¿ªÁ¬½Ó×´Ì¬
+    connect (tcp, SIGNAL(connected()), this, SLOT(updateClientStatusConnect())); //æ›´æ–°è¿žæŽ¥çŠ¶æ€
+    //connect (tcp, SIGNAL(disconnected()), this, SLOT(updateClientStatusDisonnect())); //æ›´æ–°æ–­å¼€è¿žæŽ¥çŠ¶æ€
     connect(tcp,SIGNAL(readyRead()),this,SLOT(readMessage()));
     ui->connectpushButton->setEnabled (false);
     ui->disconnectpushButton->setEnabled (true);
 }
 
+//æ–­å¼€è¿žæŽ¥æŒ‰é’®
 void client::on_disconnectpushButton_clicked()
 {
-    ui->clientMessagelineEdit->setText (tr("clientStop"));
+    ui->messagetextEdit->setText (tr("clientStop"));
     clientSendMessage ();
-    ui->clientMessagelineEdit->setText (tr(""));
-    ui->cStatuslabel->setText (tr("Á¬½Ó¶Ï¿ª"));
+    ui->messagetextEdit->setText (tr(""));
+    ui->cStatuslabel->setText (tr("è¿žæŽ¥æ–­å¼€"));
     tcp->abort();
     delete tcp;
     tcp=NULL;
@@ -76,10 +79,14 @@ void client::on_disconnectpushButton_clicked()
     ui->disconnectpushButton->setEnabled (false);
     ui->clientSendpushButton->setEnabled (false);
 
-
+    int iLen = ui->userTableWidget->rowCount();
+    for(int i=0; i<iLen; i++)
+    {
+        ui->userTableWidget->removeRow(i);
+    }
 }
 
-//¿Í»§¶Ë´íÎóÌáÊ¾
+//å®¢æˆ·ç«¯é”™è¯¯æç¤º
 void client::displayError (QAbstractSocket::SocketError)
 {
       QMessageBox::warning (this, tr("Warnning"), tcp->errorString ());
@@ -89,9 +96,10 @@ void client::displayError (QAbstractSocket::SocketError)
       ui->clientSendpushButton->setEnabled (false);
 }
 
+//æ›´æ–°è¿žæŽ¥çŠ¶æ€
 void client::updateClientStatusConnect ()
 {
-    ui->cStatuslabel->setText (tr("ÒÑÁ¬½Ó"));
+    ui->cStatuslabel->setText (tr("å·²è¿žæŽ¥"));
     ui->connectpushButton->setEnabled (false);
     ui->disconnectpushButton->setEnabled (true);
     ui->clientSendpushButton->setEnabled (true);
@@ -99,13 +107,13 @@ void client::updateClientStatusConnect ()
 
 //void client::updateClientStatusDisonnect()
 //{
-//    ui->cStatuslabel->setText (tr("·þÎñÆ÷Í£Ö¹ÕìÌý"));
+//    ui->cStatuslabel->setText (tr("æœåŠ¡å™¨åœæ­¢ä¾¦å¬"));
 //    ui->connectpushButton->setEnabled (true);
 //    ui->disconnectpushButton->setEnabled (false);
 //    ui->clientSendpushButton->setEnabled (false);
 //}
 
-//ÐèÒª×Ô¼ºÌí¼ÓµÄº¯Êý
+//éœ€è¦è‡ªå·±æ·»åŠ çš„å‡½æ•°
 void client::updateStatus()
 {
     ui->connectpushButton->setEnabled (false);
@@ -113,28 +121,55 @@ void client::updateStatus()
     ui->clientSendpushButton->setEnabled (true);
 }
 
-//¿Í»§¶Ë¶ÁÈ¡ÐÅÏ¢
+//å®¢æˆ·ç«¯è¯»å–ä¿¡æ¯
 void client::readMessage ()
 {
-    QByteArray data=tcp->readAll();
+//    QByteArray data=tcp->readAll();
+
 //    message = QString(data);
-//    if(message.contains ("serverStop")) //Èç¹ûÊÕµ½ÊÇ¿Í»§¶Ë¶Ï¿ªÁ¬½ÓµÄÐÅÏ¢
+//    if(message.contains ("serverStop")) //å¦‚æžœæ”¶åˆ°æ˜¯å®¢æˆ·ç«¯æ–­å¼€è¿žæŽ¥çš„ä¿¡æ¯
 //    {
-//        ui->cStatuslabel->setText (tr("·þÎñÆ÷Í£Ö¹ÕìÌý"));
+//        ui->cStatuslabel->setText (tr("æœåŠ¡å™¨åœæ­¢ä¾¦å¬"));
 //        ui->connectpushButton->setEnabled (true);
 //        ui->disconnectpushButton->setEnabled (false);
 //        ui->clientSendpushButton->setEnabled (false);
 //       return;
 //    }
-    ui->messagetextBrowser->append(message.arg(tr("&lt;&lt;ÊÕµ½ÏûÏ¢:"))+QString(data));
+    int type;
+    QString uIP, message;
+    QDataStream in(tcp);
+    in.setVersion(QDataStream::Qt_4_6);
+    QString time = QDateTime::currentDateTime().toString("hh:mm:ss");
+    in >> type >> uIP;
+    QTableWidgetItem *ip = new QTableWidgetItem(uIP);
+    switch(type)
+    {
+    case Message:
+        in >> message;
+        ui->messagetextBrowser->append(time +uIP +message);
+        break;
+    case NewParticipant:
+        ui->messagetextBrowser->append(time +uIP +tr("æŽ¥å…¥"));
+        ui->userTableWidget->insertRow(0);
+        ui->userTableWidget->setItem(0, 0, ip);
+        break;
+    case ParticipantLeft:
+        int rowNum = ui->userTableWidget->findItems(uIP, Qt::MatchExactly).first()->row();
+        ui->userTableWidget->removeRow(rowNum);
+        ui->messagetextBrowser->setTextColor(Qt::red);
+        ui->messagetextBrowser->append(time +uIP +tr("ç¦»å¼€"));
+        break;
+    }
+//    ui->messagetextBrowser->append(message.arg(tr("&lt;&lt;æ”¶åˆ°æ¶ˆæ¯:"))+QString(data));
 }
 
-//·¢ËÍ°´Å¥
+//å‘é€æŒ‰é’®
 void client::on_clientSendpushButton_clicked()
 {
     QByteArray data;
-    data.append(ui->clientMessagelineEdit->text());
+    data.append(ui->messagetextEdit->toPlainText());
     tcp->write(data);
     ui->messagetextBrowser->insertPlainText (tr("send message: %1 \n").arg (QString(data)));
-    ui->clientMessagelineEdit->clear();
+    ui->messagetextEdit->clear();
+    ui->messagetextEdit->setFocus();
 }

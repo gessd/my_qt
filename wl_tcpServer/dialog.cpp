@@ -66,7 +66,7 @@ void Dialog::info_init()//信息初始化，主要是获取本地IP
     ui->startpushButton->setEnabled(true);
     //treeWidget初始化
     ui->treeWidget->setColumnCount(4);
-    ui->treeWidget->setHeaderLabels(QStringList()<<"User IP"<<"Client Port"<<"UID"<<"Recive Message");
+    ui->treeWidget->setHeaderLabels(QStringList()<<"Client IP"<<"Client Port"<<"Descriptor"<<"Recive Message");
     ui->treeWidget->header()->setResizeMode(QHeaderView::ResizeToContents);
     ui->treeWidget->header()->setStretchLastSection(true);
 }
@@ -90,45 +90,65 @@ void Dialog::on_startpushButton_clicked()//开始（Start）按钮单击，开�
 
 void Dialog::updateStatus()//有客户来连接了
 {
+    MessageType type = NewParticipant;
+    QStringList list;
+    QByteArray datasend;
+    QDataStream out(&datasend, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_4_6);
+    QString time = QDateTime::currentDateTime().toString("hh:mm:ss");   //  获取当前时间
     QTcpSocket *clientConnection=tcpServer->nextPendingConnection ();//获取socket
-    QString clientInfo="User "+clientConnection->peerAddress().toString()+"连接成功";
-    ui->messagetextEdit->setText(clientInfo);
+
+    QString clientInfo="Client "+clientConnection->peerAddress().toString()+" connected successfully";
+    ui->statuslabel->setText(clientInfo);       //label更新数据
     //qDebug()<<"peerAddress: "<<clientConnection->peerAddress()<<" peerName: "<<clientConnection->peerName()<<" peerPort: "<<clientConnection->peerPort();
     QStringList columItemList;
     QTreeWidgetItem *A;
     columItemList<<clientConnection->peerAddress().toString()<<QString::number(clientConnection->peerPort())<<QString::number(clientConnection->socketDescriptor());
+        //链表写入客户端的IP、端口、子套接字的标示符
     A = new QTreeWidgetItem(columItemList);
-    ui->treeWidget->addTopLevelItem(A);
-    mytcpsocket.append(clientConnection);
+    ui->treeWidget->addTopLevelItem(A);     //界面显示客户端数据
+    mytcpsocket.append(clientConnection);   //套接字链表添加新用户的子套接字
     connect (clientConnection, SIGNAL(disconnected()), this, SLOT(updateSendStatus()));
     connect (clientConnection, SIGNAL(disconnected()), clientConnection, SLOT(deleteLater()));
-    connect (clientConnection, SIGNAL(readyRead()), this, SLOT(serverReadMessage()));
+    connect (clientConnection, SIGNAL(readyRead()), this, SLOT(serverReadMessage()));           //readyRead()有新消息对应槽函数
+
+    //messageTexxtBrowser窗口显示新用户接入
+    ui->messageTextBrowser->setTextColor(Qt::blue);     //设置文本颜色
+    ui->messageTextBrowser->append(time +"\n" +clientConnection->peerAddress().toString() +tr("接入") +"\n");
+
+    out << type << clientConnection->peerAddress().toString();
+    //向所有用户发送新用户接入消息
+    for(int i=0; i<mytcpsocket.length(); i++)
+    {
+        mytcpsocket[i]->write(datasend);    //向本子套接字发送消息
+    }
 }
 
 void Dialog::serverReadMessage()//接受客户发送的信息
 {
-    for(int i=0;i<mytcpsocket.length();i++)
+    for(int i=0;i<mytcpsocket.length();i++) //循环当前所有子TCP连接链表
     {
         //qDebug()<<"bytesAvailable"<<mytcpsocket[i]->bytesAvailable()<<"    ";
-        if(mytcpsocket[i]->bytesAvailable()>0)
+        if(mytcpsocket[i]->bytesAvailable()>0)      //判断当前子TCP连接是有新数据
+            //bytesAvailable()返回当前已经获取的数据的大小
         {
-            QByteArray datarcv=mytcpsocket[i]->readAll();
+            QByteArray datarcv=mytcpsocket[i]->readAll();   //读取客户端子套接字的所有数据
             QString clientmsg(datarcv);
             QList<QTreeWidgetItem *>treelist=ui->treeWidget->findItems(QString::number(mytcpsocket[i]->socketDescriptor()),Qt::MatchExactly,2);
+                                                           //findItems以标识符(socketDescriptor)查找Item，返回到treelist
             //ui->treeWidget->removeItemWidget(treelist[0],3);
             QStringList columItemList;
             QTreeWidgetItem *A;
             columItemList<<mytcpsocket[i]->peerAddress().toString()<<QString::number(mytcpsocket[i]->peerPort())<<QString::number(mytcpsocket[i]->socketDescriptor())<<clientmsg;
-            A = new QTreeWidgetItem(columItemList);
-            int index=ui->treeWidget->indexOfTopLevelItem(treelist[0]);
-            ui->treeWidget->takeTopLevelItem(index);
+                    //子套接字IP、端口、标识符、消息
+            A = new QTreeWidgetItem(columItemList);     //把StringList转换为TreeWidgetItem类型内容，方便后边插入数据
+            int index=ui->treeWidget->indexOfTopLevelItem(treelist[0]);     //indexOfTopLevelItem返回顶级项目item的模型索引，如果item不存在则返回-1。
+            ui->treeWidget->takeTopLevelItem(index);    //takeTopLevelItem去除节点
             //Removes the top-level item at the given index in the tree and returns it, otherwise returns 0;
-            ui->treeWidget->insertTopLevelItem(index,A);
-            clientmsg="hi "+clientmsg+"\n";
-            QByteArray datasend;
-            datasend.append(clientmsg);
-            mytcpsocket[i]->write(datasend);
+            ui->treeWidget->insertTopLevelItem(index,A);    //insertTopLevelItem插入节点，去除后再重新插入节点，为了更新消息
+            ui->messageTextBrowser->append(mytcpsocket[i]->peerAddress().toString() +tr("： ") +clientmsg);  //界面显示新消息
 
+            messageTransmit(mytcpsocket[i]->peerAddress().toString(), clientmsg);
         }
         //qDebug()<<mytcpsocket[i]->socketDescriptor();//<<mytcpsocket[i]->SocketState;
     }
@@ -136,6 +156,7 @@ void Dialog::serverReadMessage()//接受客户发送的信息
 
 void Dialog::updateSendStatus()//客户断开连接
 {
+    QString time = QDateTime::currentDateTime().toString("hh:mm:ss");   //  获取当前时间
     for(int i=0;i<mytcpsocket.length();i++)
     {
         //qDebug()<<"bytesAvailable"<<mytcpsocket[i]->bytesAvailable()<<"    ";
@@ -146,6 +167,8 @@ void Dialog::updateSendStatus()//客户断开连接
             int index=ui->treeWidget->indexOfTopLevelItem(treelist[0]);
             ui->treeWidget->takeTopLevelItem(index);
             ui->statuslabel->setText(mytcpsocket[i]->peerAddress().toString()+" is disconnected!");
+            ui->messageTextBrowser->setTextColor(Qt::red);     //设置文本颜色
+            ui->messageTextBrowser->append(time +"\n" +mytcpsocket[i]->peerAddress().toString() +tr("断开") +"\n");
             mytcpsocket.removeAt(i);
         }
         //qDebug()<<mytcpsocket[i]->isReadable()<<mytcpsocket[i]->peerPort()<<mytcpsocket[i]->socketDescriptor()<<mytcpsocket[i]->state();
@@ -161,4 +184,17 @@ void Dialog::on_stoppushButton_clicked()//停止按钮单击
     ui->stoppushButton->setEnabled(false);
     ui->startpushButton->setEnabled(true);
     ui->statuslabel->setText("Server is Stopped");
+}
+
+void Dialog::messageTransmit(QString uIP, QString message)
+{
+    MessageType type = Message;
+    QByteArray datasend;
+    QDataStream out(&datasend, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_4_6);
+    out << type << uIP << message;
+    for(int i=0;i<mytcpsocket.length();i++) //循环当前所有子TCP连接链表
+    {
+        mytcpsocket[i]->write(datasend);
+    }
 }
