@@ -1,10 +1,9 @@
-﻿#include <QMessageBox>
-#include <QString>
-
-#include "client.h"
+﻿#include "client.h"
 #include "ui_client.h"
 
-//#include <QTableWidgetItem>
+#include <QTreeWidgetItem>
+#include <QMessageBox>
+#include <QString>
 
 client::client(QWidget *parent) :
     QDialog(parent),
@@ -29,9 +28,10 @@ client::~client()
 void client::clientSendMessage ()
 {
     QByteArray data;
-    data.append(ui->messagetextEdit->toPlainText());     //
+    data.append(ui->messagetextEdit->toPlainText());
+//    data.append(ui->clientMessagelineEdit->text());
     tcp->write(data);       //写入数据
-    ui->messagetextBrowser->insertPlainText (tr("send message: %1 \n").arg (QString(data)));
+//    ui->messagetextBrowser->insertPlainText(tr("send message: %1 \n").arg (QString(data)));
 }
 
 //清空按钮
@@ -57,6 +57,7 @@ void client::on_connectpushButton_clicked()
     }
     tcp=new QTcpSocket(this);
     tcp->connectToHost (serverIP, clientPort.toInt()); //连接到主机
+    tcp->connectToHost (serverIP, clientPort.toInt ()); //连接到主机
     connect (tcp, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(displayError(QAbstractSocket::SocketError)));
     connect (tcp, SIGNAL(connected()), this, SLOT(updateClientStatusConnect())); //更新连接状态
     //connect (tcp, SIGNAL(disconnected()), this, SLOT(updateClientStatusDisonnect())); //更新断开连接状态
@@ -68,10 +69,13 @@ void client::on_connectpushButton_clicked()
 //断开连接按钮
 void client::on_disconnectpushButton_clicked()
 {
-    ui->messagetextEdit->setText (tr("clientStop"));
-    clientSendMessage ();
-    ui->messagetextEdit->setText (tr(""));
-    ui->cStatuslabel->setText (tr("连接断开"));
+//    ui->messagetextEdit->setText (tr("你已断开连接"));
+//    clientSendMessage ();
+//    ui->messagetextEdit->setText (tr(""));
+//    ui->clientMessagelineEdit->setText (tr(""));
+//    ui->cStatuslabel->setText (tr("连接断开"));
+
+    ui->messagetextBrowser->append(tr("你已断开连接"));
     tcp->abort();
     delete tcp;
     tcp=NULL;
@@ -82,7 +86,7 @@ void client::on_disconnectpushButton_clicked()
     int iLen = ui->userTableWidget->rowCount();
     for(int i=0; i<iLen; i++)
     {
-        ui->userTableWidget->removeRow(i);
+        ui->userTableWidget->removeRow(0);
     }
 }
 
@@ -136,12 +140,17 @@ void client::readMessage ()
 //       return;
 //    }
     int type;
+    int i = 0;
+    int rowNum;
+    QTreeWidgetItem  *uList;
+    QStringList list;
     QString uIP, message;
     QDataStream in(tcp);
     in.setVersion(QDataStream::Qt_4_6);
     QString time = QDateTime::currentDateTime().toString("hh:mm:ss");
     in >> type >> uIP;
     QTableWidgetItem *ip = new QTableWidgetItem(uIP);
+    QTreeWidgetItem *A;
     switch(type)
     {
     case Message:
@@ -149,15 +158,20 @@ void client::readMessage ()
         ui->messagetextBrowser->append(time +uIP +message);
         break;
     case NewParticipant:
-        ui->messagetextBrowser->append(time +uIP +tr("接入"));
-        ui->userTableWidget->insertRow(0);
-        ui->userTableWidget->setItem(0, 0, ip);
+        ui->messagetextBrowser->append(time +uIP +tr("接入") +"\n");
         break;
     case ParticipantLeft:
-        int rowNum = ui->userTableWidget->findItems(uIP, Qt::MatchExactly).first()->row();
+        rowNum = ui->userTableWidget->findItems(uIP, Qt::MatchExactly).first()->row();
         ui->userTableWidget->removeRow(rowNum);
         ui->messagetextBrowser->setTextColor(Qt::red);
-        ui->messagetextBrowser->append(time +uIP +tr("离开"));
+        ui->messagetextBrowser->append(time +uIP +tr("离开") +"\n");
+        break;
+    case FileName:
+        break;
+    case Refuse:
+        break;
+    case TempMessage:
+        ui->messagetextBrowser->append(tr("接入成功"));
         break;
     }
 //    ui->messagetextBrowser->append(message.arg(tr("&lt;&lt;收到消息:"))+QString(data));
@@ -169,7 +183,9 @@ void client::on_clientSendpushButton_clicked()
     QByteArray data;
     data.append(ui->messagetextEdit->toPlainText());
     tcp->write(data);
-    ui->messagetextBrowser->insertPlainText (tr("send message: %1 \n").arg (QString(data)));
+//    ui->messagetextBrowser->setAlignment(Qt::AlignRight);
+    ui->messagetextBrowser->append(tr("我发送: %1 \n").arg (QString(data)));
     ui->messagetextEdit->clear();
     ui->messagetextEdit->setFocus();
+//    ui->messagetextBrowser->setAlignment(Qt::AlignLeft);
 }
