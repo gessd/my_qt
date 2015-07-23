@@ -1,6 +1,10 @@
 #include "dialog.h"
 #include "ui_dialog.h"
 
+#include <QSqlQuery>
+#include <QDebug>
+#include <QSqlRecord>
+#include <QSqlError>
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -228,4 +232,10 @@ void Dialog::messageTransmit(QString uIP, QString message, int socketDescriptor)
             mytcpsocket[i]->write(datasend);
         }
     }
+}
+
+void Dialog::on_pushButton_clicked()
+{
+    QSqlQuery query;
+
 }

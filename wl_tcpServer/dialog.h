@@ -30,6 +30,8 @@ private slots:
     void updateSendStatus();
     void on_stoppushButton_clicked();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::Dialog *ui;
     QTcpServer *tcpServer;
