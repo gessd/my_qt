@@ -5,6 +5,8 @@
 #include <QDebug>
 #include <QSqlRecord>
 #include <QSqlError>
+#include <QSqlQueryModel>
+#include "sqlQuery.h"
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -236,6 +238,78 @@ void Dialog::messageTransmit(QString uIP, QString message, int socketDescriptor)
 
 void Dialog::on_pushButton_clicked()
 {
-    QSqlQuery query;
+    /*
+//    QTreeWidgetItem *item;
+//    QStringList columItemList;
+    QStringList columItemList;
+    QTreeWidgetItem *A;
 
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("E:/git/my_qt/wl_tcpServer/data.db");
+    if(db.open())
+    {
+        QSqlQuery query;
+        query.exec("select * from soc_user");
+        while(query.next())
+        {
+//            columItemList<<QString::number((query.value(0))<<QString::number(query.value(1))<<query.value(2).toString();
+//            item = new QTreeWidgetItem(columItemList);
+//            ui->treeWidget->addTopLevelItem(item);
+
+            columItemList<<query.value(0).toString();
+            A = new QTreeWidgetItem(columItemList);
+            ui->treeWidget->addTopLevelItem(A);
+        }
+    }
+    */
+
+//    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+//    db.setDatabaseName("E:/git/my_qt/wl_tcpServer/data.db");
+//    QSqlQueryModel *myModel = new QSqlQueryModel;
+//    if(db.open())
+//    {
+//        myModel->setQuery("select * from soc_user");
+//        myModel->setHeaderData(0, Qt::Horizontal, tr("soc_descriptor"));
+//        ui->tableView->setModel(myModel);
+//    }
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("E:/git/my_qt/wl_tcpServer/data.db");
+    if(db.open())
+    {
+
+        QSqlQuery query;
+        query.exec("select * from soc_user");
+        while(query.next())
+        {
+            QTreeWidgetItem *A;
+            QStringList list;
+            list<<query.value(0).toString()<<query.value(1).toString();
+            A = new QTreeWidgetItem(list);
+            ui->treeWidget->insertTopLevelItem(0,A);
+            qDebug() << list;
+        }
+    }
+    db.close();
+}
+
+void Dialog::on_pushButton_2_clicked()
+{
+    QString tr = ui->lineEdit->text();
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName("E:/git/my_qt/wl_tcpServer/data.db");
+    if(db.open())
+    {
+        qDebug() << QString("open");
+        QSqlQuery query;
+//        query.exec(QString("select * from soc_user where soc_ip='%1'").arg(tr));
+        query.exec(QString("delete from soc_user where soc_ip='%1'").arg(tr));
+        query.next();
+        QTreeWidgetItem *A;
+        QStringList list;
+        list<<query.value(0).toString()<<query.value(1).toString();
+        A = new QTreeWidgetItem(list);
+        ui->treeWidget->insertTopLevelItem(0, A);
+        qDebug() << query.value(0).toString() << query.value(1).toString();
+    }
 }
