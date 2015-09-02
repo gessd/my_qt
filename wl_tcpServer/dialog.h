@@ -8,6 +8,7 @@
 #include <QHostInfo>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QSqlQuery>
 
 namespace Ui {
 class Dialog;
@@ -23,6 +24,7 @@ class Dialog : public QDialog
 public:
     explicit Dialog(QWidget *parent = 0);
     ~Dialog();
+
 private slots:
     void on_startpushButton_clicked();
     void updateStatus();
@@ -37,6 +39,9 @@ private slots:
 private:
     Ui::Dialog *ui;
     QTcpServer *tcpServer;
+    QSqlQuery query;
+    QString bathstr;
+    bool sqlOpen(QString bath);
     QList<QTcpSocket *>mytcpsocket;//连接成功的套接字
     void info_init();//信息初始化
     void messageTransmit(QString uIP, QString message, int socketDescriptor);

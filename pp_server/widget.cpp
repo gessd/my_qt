@@ -29,7 +29,6 @@ Widget::~Widget()
 void Widget::waitMessage(userType type, QString Ip, QString User, QDataStream inMessage)
 {
     QByteArray arr;
-    arr.resize(tcpServer->);
     switch(type)
     {
     case newUser:

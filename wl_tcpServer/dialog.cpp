@@ -6,7 +6,6 @@
 #include <QSqlRecord>
 #include <QSqlError>
 #include <QSqlQueryModel>
-#include "sqlQuery.h"
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
@@ -14,6 +13,7 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
     info_init();
+    bathstr = ("E:/git/my_qt/wl_tcpServer/data.db");
 }
 Dialog::~Dialog()
 {
@@ -96,7 +96,6 @@ void Dialog::on_startpushButton_clicked()//开始（Start）按钮单击，开�
 
 void Dialog::updateStatus()//有客户来连接了
 {
-
     MessageType type = NewParticipant;
     QStringList list;
     QByteArray datasend;
@@ -136,6 +135,23 @@ void Dialog::updateStatus()//有客户来连接了
             mytcpsocket[i]->write(datasend);
         }
     }
+
+    int user_desc = clientConnection->socketDescriptor();
+    QString user_ip = clientConnection->peerAddress().toString();
+    int user_port = clientConnection->peerPort();
+//    QString quertstr = QString("insert into soc_user values(%1)").arg(user_desc));
+//    QString str = QString("delete soc_user where soc_ip='%1'").arg(tr);
+    if(sqlOpen(bathstr))
+    {
+        qDebug() << tr("sqlwrite");
+        query.prepare("insert into soc_user(soc_descriptor, soc_ip, soc_port) values(:desc, :ip, :port)");
+//        query.bindValue(0, user_desc);
+//        query.bindValue(1, 'usr_ip');
+        query.addBindValue(user_desc);
+        query.addBindValue(user_ip);
+        query.addBindValue(user_port);
+        query.exec();
+    }
 }
 
 void Dialog::serverReadMessage()//接受客户发送的信息
@@ -146,7 +162,6 @@ void Dialog::serverReadMessage()//接受客户发送的信息
         if(mytcpsocket[i]->bytesAvailable()>0)      //判断当前子TCP连接是有新数据
             //bytesAvailable()返回当前已经获取的数据的大小
         {
-
             QByteArray datarcv=mytcpsocket[i]->readAll();   //读取客户端子套接字的所有数据
 
             QString clientmsg(datarcv);
@@ -183,13 +198,27 @@ void Dialog::updateSendStatus()//客户断开连接
     QString time = QDateTime::currentDateTime().toString("hh:mm:ss");   //  获取当前时间
     for(int i=0;i<mytcpsocket.length();i++)
     {
-        //qDebug()<<"bytesAvailable"<<mytcpsocket[i]->bytesAvailable()<<"    ";
+        qDebug()<<"bytesAvailable"<<mytcpsocket[i]->bytesAvailable()<<" ";
+        qDebug()<<mytcpsocket[i]->peerAddress();
+        qDebug()<<mytcpsocket[i]->peerPort();
+        qDebug()<<mytcpsocket[i]->socketDescriptor();
         if(mytcpsocket[i]->state()==QAbstractSocket::UnconnectedState)
         {
             QByteArray data;
             QDataStream out(&data, QIODevice::WriteOnly);
             out.setVersion(QDataStream::Qt_4_6);
             out << type << mytcpsocket[i]->peerAddress().toString();
+
+            qDebug() << mytcpsocket[i];
+            int user_desc = mytcpsocket[i]->socketDescriptor();
+            QString user_ip = mytcpsocket[i]->peerAddress().toString();
+            int user_port = mytcpsocket[i]->peerPort();
+            if(sqlOpen(bathstr))
+            {
+                qDebug() << ("sqldelete");
+                query.exec(QString("delete from soc_user where soc_ip='%1'").arg(user_ip));
+            }
+
             for(int i=0; i<mytcpsocket.length(); i++)
             {
                 mytcpsocket[i]->write(data);    //向本子套接字发送消息
@@ -273,6 +302,7 @@ void Dialog::on_pushButton_clicked()
 //        ui->tableView->setModel(myModel);
 //    }
 
+/*
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName("E:/git/my_qt/wl_tcpServer/data.db");
     if(db.open())
@@ -291,6 +321,20 @@ void Dialog::on_pushButton_clicked()
         }
     }
     db.close();
+*/
+    QString bathstr = ("E:/git/my_qt/wl_tcpServer/data.db");
+    if(sqlOpen(bathstr))
+    {
+        QString str = ui->lineEdit->text();
+//        query.exec(QString("select * from soc_user where soc_ip='%1'").arg(str));
+        query.prepare("insert into soc_user(soc_descriptor, soc_ip) values(?,?)");
+        query.addBindValue(222);
+        query.addBindValue("192.168.0.111");
+//        query.bindValue();
+        query.exec();
+//        qDebug() << query.value(0) << query.value(1);
+
+    }
 }
 
 void Dialog::on_pushButton_2_clicked()
@@ -312,4 +356,16 @@ void Dialog::on_pushButton_2_clicked()
         ui->treeWidget->insertTopLevelItem(0, A);
         qDebug() << query.value(0).toString() << query.value(1).toString();
     }
+}
+
+bool Dialog::sqlOpen(QString bath)
+{
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db.setDatabaseName(bath);
+    if(db.open())
+    {
+        query = QSqlQuery::QSqlQuery(db);
+        return true;
+    }
+	return false;
 }

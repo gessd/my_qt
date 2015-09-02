@@ -13,10 +13,8 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        dialog.cpp \
-    sqlQuery.cpp
+        dialog.cpp
 
-HEADERS  += dialog.h \
-    sqlQuery.h
+HEADERS  += dialog.h
 
 FORMS    += dialog.ui

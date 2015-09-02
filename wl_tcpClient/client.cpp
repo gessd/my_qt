@@ -12,7 +12,6 @@ client::client(QWidget *parent) :
     ui->setupUi(this);
 
     ui->clientSendpushButton->setEnabled (false);
-    ui->disconnectpushButton->setEnabled (false);
     tcp=NULL;
     message=tr("<span style=\"color:red\">%1</span>");
 }
@@ -40,7 +39,7 @@ void client::on_cCleanpushButton_clicked()
     ui->messagetextBrowser->setText ("");   //清空数据
 }
 
-//客户端连接按钮槽函数
+//客户端连接按钮
 void client::on_connectpushButton_clicked()
 {
     serverIP = ui->clientIPlineEdit->text ();
@@ -57,7 +56,6 @@ void client::on_connectpushButton_clicked()
     }
     tcp=new QTcpSocket(this);
     tcp->connectToHost (serverIP, clientPort.toInt()); //连接到主机
-    tcp->connectToHost (serverIP, clientPort.toInt ()); //连接到主机
     connect (tcp, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(displayError(QAbstractSocket::SocketError)));
     connect (tcp, SIGNAL(connected()), this, SLOT(updateClientStatusConnect())); //更新连接状态
     //connect (tcp, SIGNAL(disconnected()), this, SLOT(updateClientStatusDisonnect())); //更新断开连接状态
@@ -81,7 +79,6 @@ void client::on_disconnectpushButton_clicked()
     tcp=NULL;
     ui->connectpushButton->setEnabled (true);
     ui->disconnectpushButton->setEnabled (false);
-    ui->clientSendpushButton->setEnabled (false);
 
     int iLen = ui->userTableWidget->rowCount();
     for(int i=0; i<iLen; i++)
@@ -97,7 +94,6 @@ void client::displayError (QAbstractSocket::SocketError)
       tcp->close ();
       ui->connectpushButton->setEnabled (true);
       ui->disconnectpushButton->setEnabled (false);
-      ui->clientSendpushButton->setEnabled (false);
 }
 
 //更新连接状态
@@ -106,7 +102,6 @@ void client::updateClientStatusConnect ()
     ui->cStatuslabel->setText (tr("已连接"));
     ui->connectpushButton->setEnabled (false);
     ui->disconnectpushButton->setEnabled (true);
-    ui->clientSendpushButton->setEnabled (true);
 }
 
 //void client::updateClientStatusDisonnect()
@@ -122,7 +117,6 @@ void client::updateStatus()
 {
     ui->connectpushButton->setEnabled (false);
     ui->disconnectpushButton->setEnabled (true);
-    ui->clientSendpushButton->setEnabled (true);
 }
 
 //客户端读取信息
@@ -136,7 +130,6 @@ void client::readMessage ()
 //        ui->cStatuslabel->setText (tr("服务器停止侦听"));
 //        ui->connectpushButton->setEnabled (true);
 //        ui->disconnectpushButton->setEnabled (false);
-//        ui->clientSendpushButton->setEnabled (false);
 //       return;
 //    }
     int type;
