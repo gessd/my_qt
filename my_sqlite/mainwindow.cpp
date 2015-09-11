@@ -148,7 +148,7 @@ bool MainWindow::quexec_table(QString sqlstr)
 void MainWindow::on_pushButton_2_clicked()
 {
     QString str = "abcdef";
-    int nt = str.indexOf("ab");
+    int nt = str.indexOf("f");
     qDebug()<< nt;
 }
 

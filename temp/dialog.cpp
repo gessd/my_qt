@@ -16,6 +16,7 @@ Dialog::Dialog(QWidget *parent) :
     db.setDatabaseName(pathstr);
 }
 
+
 Dialog::~Dialog()
 {
     delete ui;
@@ -106,4 +107,37 @@ bool Dialog::sqlOpen()
         return true;
     }
     return false;
+}
+
+void Dialog::myswitch()
+{
+    this->nswitch=1;
+    switch(this->nswitch)
+    {
+    case 1:
+        qDebug()<<1;
+        this->nswitch = this->nswitch+1;
+    case 2:
+        qDebug()<<2;
+        this->nswitch = this->nswitch+1;
+        break;
+    case 3:
+        qDebug()<<3;
+        this->nswitch = this->nswitch+1;
+        break;
+    case 4:
+        qDebug()<<4;
+        this->nswitch = this->nswitch;
+    case 5:
+        qDebug()<<5;
+        this->nswitch = this->nswitch+1;
+    case 6:
+        qDebug()<<6;
+        this->nswitch = this->nswitch+1;
+    }
+}
+
+void Dialog::on_pushButton_4_clicked()
+{
+    myswitch();
 }
