@@ -10,8 +10,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     pro_test();
-    //mdialog = new xsDialog();
-    //mdialog->fwindow=this;
+    mdialog = new xsDialog();
+    mdialog->fwindow=this;
 }
 
 MainWindow::~MainWindow()
