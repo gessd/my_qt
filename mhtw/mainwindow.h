@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "dialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -13,6 +14,7 @@ class MainWindow : public QMainWindow
     
 public:
     explicit MainWindow(QWidget *parent = 0);
+    Dialog* dlog;
     QString mname;
     QString mpss;
     QString murl;
@@ -27,13 +29,13 @@ public:
 
 public slots:
     void loadobject();
-
     bool mslogin(QString name, QString pss, QString surl, QString type);
     void loadOver();
     void currentip(QString strip);
     void currentroom(QString strroom);
     void innext(QString strroom, QString strip);
     bool roomnext(bool aux, QString ipmain);
+    void isline(int isline);
     void mup();
 
 

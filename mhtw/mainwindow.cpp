@@ -8,12 +8,15 @@
 #include "QMessageBox"
 #include "QDebug"
 #include <QNetworkInterface>
+#include "dialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    dlog=new Dialog();
+    dlog->fwindow=this;
     ui->webView->load(QUrl("shead.htm"));
     connect(ui->webView->page()->mainFrame(),SIGNAL(javaScriptWindowObjectCleared()),this,SLOT(loadobject()));
     connect(ui->webView->page()->mainFrame(),SIGNAL(loadFinished(bool)),this,SLOT(loadOver()));
@@ -186,6 +189,18 @@ bool MainWindow::roomnext(bool aux, QString ipmain)
         }
     }
     return true;
+}
+
+void MainWindow::isline(int isline)
+{
+    if(isline)
+    {
+        QMessageBox::about(this, tr("模式"), tr("离线"));
+    }
+    else
+    {
+        QMessageBox::about(this, tr("模式"), tr("在线"));
+    }
 }
 
 void MainWindow::sinspect()
